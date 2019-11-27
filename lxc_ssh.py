@@ -226,7 +226,10 @@ class Connection(ConnectionBase):
         list ['-o', 'Foo=1', '-o', 'Bar=foo bar'] that can be added to
         the argument list. The list will not contain any empty elements.
         """
-        return [to_unicode(x.strip()) for x in shlex.split(to_bytes(argstring).decode()) if x.strip()]
+        if sys.version_info[0] >= 3:
+            return [to_unicode(x.strip()) for x in shlex.split(to_bytes(argstring).decode()) if x.strip()]
+        else:
+            return [to_unicode(x.strip()) for x in shlex.split(to_bytes(argstring)) if x.strip()]
 
 
     if LooseVersion(ansible_version) < LooseVersion('2.3.0.0'):
@@ -293,7 +296,7 @@ class Connection(ConnectionBase):
                 self._add_args(
                     "ansible_password/ansible_ssh_pass not set", (
                         "-o", "KbdInteractiveAuthentication=no",
-                        "-o", "PreferredAuthentications=gssapi-with-mic,gssapi-keyex,hostbased,publickey",
+                        "-o", "PreferredAuthentications=publickey,gssapi-with-mic,gssapi-keyex,hostbased",
                         "-o", "PasswordAuthentication=no"
                     )
                 )
@@ -362,7 +365,7 @@ class Connection(ConnectionBase):
                 self._add_args(
                     b_command, (
                         b"-o", b"KbdInteractiveAuthentication=no",
-                        b"-o", b"PreferredAuthentications=gssapi-with-mic,gssapi-keyex,hostbased,publickey",
+                        b"-o", b"PreferredAuthentications=publickey,gssapi-with-mic,gssapi-keyex,hostbased",
                         b"-o", b"PasswordAuthentication=no"
                     ),
                     u"ansible_password/ansible_ssh_pass not set"
@@ -556,7 +559,10 @@ class Connection(ConnectionBase):
         if isinstance(cmd, (text_type, binary_type)):
             cmd = to_bytes(cmd)
         else:
-            cmd = list(map(to_bytes, cmd))
+            if sys.version_info[0] >= 3:
+                cmd = list(map(to_bytes, cmd))
+            else:
+                cmd = map(to_bytes, cmd)
 
         if not in_data:
             try:
@@ -1235,8 +1241,13 @@ class Connection(ConnectionBase):
 
         if returncode != 0:
             raise AnsibleError("failed to transfer file from {0}:\n{1}\n{2}".format(in_path, stdout, stderr))
-        with open(out_path,'wb') as out_f:
-            out_f.write(stdout)
+
+        if sys.version_info[0] >= 3:
+            with open(out_path,'wb') as out_f:
+                out_f.write(stdout)
+        else:
+            with open(out_path,'w') as out_f:
+                out_f.write(stdout)
 
         return (returncode, stdout, stderr)
 
