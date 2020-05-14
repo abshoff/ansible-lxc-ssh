@@ -739,7 +739,7 @@ class Connection(ConnectionBase):
         if not os.path.exists(to_bytes(in_path, errors='surrogate_or_strict')):
             raise AnsibleFileNotFound("file or module does not exist: {0}".format(to_native(in_path)))
 
-        with open(in_path,'r') as in_f:
+        with open(in_path,'r+b') as in_f:
             in_data = in_f.read()
             if (len(in_data) == 0):
                 # define a shortcut for empty files - nothing ro read so the ssh pipe will hang
