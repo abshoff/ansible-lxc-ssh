@@ -742,7 +742,7 @@ class Connection(ConnectionBase):
         with open(in_path,'r+b') as in_f:
             in_data = in_f.read()
             if (len(in_data) == 0):
-                # define a shortcut for empty files - nothing ro read so the ssh pipe will hang
+                # define a shortcut for empty files - nothing to read so the ssh pipe will hang
                 cmd = ('touch %s; echo -n done' % pipes.quote(out_path))
             else:
                 # regular command
