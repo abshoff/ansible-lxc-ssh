@@ -718,7 +718,7 @@ class Connection(ConnectionBase):
                     % (pipes.quote(h),
                        pipes.quote(cmd))
         elif (self.lxc_version == 1):
-            lxc_cmd = 'sudo lxc-attach --name %s -- /bin/sh -c %s'  \
+            lxc_cmd = 'sudo lxc-attach --clear-env --name %s -- /bin/su -c %s'  \
                     % (pipes.quote(h),
                        pipes.quote(cmd))
         if in_data:
@@ -754,7 +754,7 @@ class Connection(ConnectionBase):
                             % (pipes.quote(h),
                                pipes.quote(cmd))
                 elif (self.lxc_version == 1):
-                    lxc_cmd = 'sudo lxc-attach --name %s -- /bin/sh -c %s'  \
+                    lxc_cmd = 'sudo lxc-attach --clear-env --name %s -- /bin/su -c %s'  \
                             % (pipes.quote(h),
                                pipes.quote(cmd))
                 if in_data:
@@ -779,7 +779,7 @@ class Connection(ConnectionBase):
                             % (pipes.quote(h),
                                pipes.quote(cmd))
                 elif (self.lxc_version == 1):
-                    lxc_cmd = 'sudo lxc-attach --name %s -- /bin/sh -c %s'  \
+                    lxc_cmd = 'sudo lxc-attach --clear-env --name %s -- /bin/su -c %s'  \
                             % (pipes.quote(h),
                                pipes.quote(cmd))
                 if in_data:
@@ -804,7 +804,7 @@ class Connection(ConnectionBase):
                     % (pipes.quote(h),
                        pipes.quote(cmd))
         elif (self.lxc_version == 1):
-            lxc_cmd = 'sudo lxc-attach --name %s -- /bin/sh -c %s'  \
+            lxc_cmd = 'sudo lxc-attach --clear-env --name %s -- /bin/su -c %s'  \
                     % (pipes.quote(h),
                        pipes.quote(cmd))
 
