@@ -268,6 +268,7 @@ DOCUMENTATION = """
           cli:
             - name: user
       pipelining:
+          description: Enable ssh pipelining.
           env:
             - name: ANSIBLE_PIPELINING
             - name: ANSIBLE_SSH_PIPELINING
@@ -279,7 +280,6 @@ DOCUMENTATION = """
           vars:
             - name: ansible_pipelining
             - name: ansible_ssh_pipelining
-
       private_key_file:
           description:
               - Path to private key file to use for authentication
@@ -477,7 +477,7 @@ def _ssh_retry(func):
                 if attempt == remaining_tries - 1:
                     raise
                 else:
-                    pause = 2 ** attempt - 1
+                    pause = 2**attempt - 1
                     if pause > 30:
                         pause = 30
 
@@ -504,6 +504,9 @@ def _ssh_retry(func):
     return wrapped
 
 
+SSHPASS_AVAILABLE = None
+
+
 class Connection(ConnectionBase):
     """ssh+lxc_attach connection"""
 
@@ -524,7 +527,30 @@ class Connection(ConnectionBase):
         """connect to the lxc; nothing to do here"""
         display.vvv("XXX connect")
         super(Connection, self)._connect()
-        self.container_name = self.get_option("lxc_container")
+        self.container_name = str(self.get_option("lxc_container"))
+
+    @staticmethod
+    def _sshpass_available():
+        global SSHPASS_AVAILABLE
+
+        # We test once if sshpass is available, and remember the result. It
+        # would be nice to use distutils.spawn.find_executable for this, but
+        # distutils isn't always available; shutils.which() is Python3-only.
+
+        if SSHPASS_AVAILABLE is None:
+            try:
+                p = subprocess.Popen(
+                    ["sshpass"],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                p.communicate()
+                SSHPASS_AVAILABLE = True
+            except OSError:
+                SSHPASS_AVAILABLE = False
+
+        return SSHPASS_AVAILABLE
 
     @staticmethod
     def _create_control_path(host, port, user, connection=None):
@@ -732,6 +758,7 @@ class Connection(ConnectionBase):
             )
 
         self.user = self.get_option("remote_user")
+
         if self.user:
             self._add_args(
                 b_command,
