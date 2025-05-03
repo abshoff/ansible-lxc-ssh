@@ -29,25 +29,7 @@ jobs:
         # build the matrix manually - not all versions of Ubuntu can do with all Ansible versions,
         # mostly because the Python version is outdated (20.04 only has Python 3.8)
         # maybe in the future this can be build with include/exclude
-        #os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
-        #ansible: ["stable-2.9", "stable-2.10", "stable-2.11", "stable-2.12", "stable-2.13", "stable-2.14"]
         include:
-          - os: ubuntu-20.04
-            guest: 20.04
-            #guest-image: 20.04/amd64
-            ansible: "stable-2.9"
-          - os: ubuntu-20.04
-            guest: 20.04
-            ansible: "stable-2.10"
-          - os: ubuntu-20.04
-            guest: 20.04
-            ansible: "stable-2.11"
-          - os: ubuntu-20.04
-            guest: 20.04
-            ansible: "stable-2.12"
-          - os: ubuntu-20.04
-            guest: 20.04
-            ansible: "stable-2.13"
           - os: ubuntu-22.04
             guest: 22.04
             ansible: "stable-2.9"
@@ -66,13 +48,33 @@ jobs:
           - os: ubuntu-22.04
             guest: 22.04
             ansible: "stable-2.14"
+
+          - os: ubuntu-24.04
+            guest: 24.04
+            ansible: "stable-2.13"
+          - os: ubuntu-24.04
+            guest: 24.04
+            ansible: "stable-2.14"
+          - os: ubuntu-24.04
+            guest: 24.04
+            ansible: "stable-2.15"
+          - os: ubuntu-24.04
+            guest: 24.04
+            ansible: "stable-2.16"
+          - os: ubuntu-24.04
+            guest: 24.04
+            ansible: "stable-2.17"
+          - os: ubuntu-24.04
+            guest: 24.04
+            ansible: "stable-2.18"
+
           # build the latest known stable Ansible on the latest known stable Ubuntu
           - os: ubuntu-latest
-            guest: 22.04
-            ansible: "stable-2.14"
+            guest: 24.04
+            ansible: "stable-2.18"
           # build the development version of Ansible on latest Ubuntu
           - os: ubuntu-latest
-            guest: 22.04
+            guest: 24.04
             ansible: "devel"
 
     steps:
@@ -194,7 +196,11 @@ jobs:
         id: test_container_interface
 
       - name: Request and wait for IPv4 address
-        run: sudo lxc exec test-container -- dhclient -v ${{ steps.test_container_interface.outputs.IF }}
+        run: sudo lxc exec test-container -- /usr/sbin/dhclient -v ${{ steps.test_container_interface.outputs.IF }}
+        # apparently this is working out of the box in 24.04
+        # also no need to install dhclient anymore
+        # in earlier versions the network address from LXC was not readily available
+        if: ${{ matrix.guest < '24.04' }}
 
       - name: Store Container IPv4 address
         run: echo "IPv4=$(sudo lxc exec test-container -- ip -o -4 addr show ${{ steps.test_container_interface.outputs.IF }} | awk '{print $4}' | cut -d/ -f1)" >> $GITHUB_OUTPUT
@@ -315,6 +321,8 @@ jobs:
 
       - name: Reload OpenSSH
         run: sudo lxc exec test-container -- systemctl reload sshd
+        # in 24.04 ssh is socket activated (by systemd)
+        if: ${{ matrix.guest < '24.04' }}
 
       - name: Install sshpass on runner
         run: sudo apt-get -y install sshpass
