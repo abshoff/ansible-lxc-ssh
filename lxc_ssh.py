@@ -529,9 +529,11 @@ class Connection(ConnectionBase):
     def _set_version(self):
         # LXC v1 uses 'lxc-info', 'lxc-attach' and so on
         # LXC v2 uses just 'lxc'
-        (returncode2, stdout2, stderr2) = self._exec_command("which lxc", None, False)
+        (returncode2, stdout2, stderr2) = self._exec_command(
+            "command -v lxc", None, False
+        )
         (returncode1, stdout1, stderr1) = self._exec_command(
-            "which lxc-info", None, False
+            "command -v lxc-info", None, False
         )
         if returncode2 == 0:
             self.lxc_version = 2
