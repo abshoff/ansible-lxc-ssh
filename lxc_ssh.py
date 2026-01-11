@@ -41,7 +41,7 @@ from ansible.errors import (
     AnsibleConnectionFailure,
     AnsibleFileNotFound,
 )
-from ansible.module_utils._text import to_bytes, to_native, to_text
+from ansible.module_utils.common.text.converters import to_bytes, to_native, to_text
 from ansible.plugins.connection import ConnectionBase
 from ansible.utils.path import unfrackpath, makedirs_safe
 
